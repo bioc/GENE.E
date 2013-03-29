@@ -1,0 +1,50 @@
+<!--
+%\VignetteEngine{knitr::knitr}
+%\VignetteIndexEntry{GENE.E Overview}
+-->
+
+```{r setup, echo=FALSE, warn=FALSE}
+library(knitr)
+options(width=80)
+```
+```{r wrap-hook, echo=FALSE}
+hook_output = knit_hooks$get('output')
+knit_hooks$set(output = function(x, options) {
+  # this hook is used only when the linewidth option is not NULL
+  if (!is.null(n <- options$linewidth)) {
+    x = knitr:::split_lines(x)
+    # any lines wider than n should be wrapped
+    if (any(nchar(x) > n)) x = strwrap(x, width = n)
+    x = paste(x, collapse = '\n')
+  }
+  hook_output(x, options)
+})
+```
+
+# GENE.E
+
+The `GENE.E` package provides the ability to transfer matrices, dendrograms, and annotations between R and [GENE-E](www.broadinstitute.org/cancer/software/GENE-E/). Two methods are provided:
+*	from.genee Gets the current selection from GENE-E.
+*	to.genee Sends a matrix and annotations to GENE-E.
+
+# Example Usage
+
+For illustration of `GENE.E` usage, we use the Golub et al. data
+set on acute leukemia from the `golubEsets` package. Please ensure that GENE-E is running and then issue the following commands to load the data and send the data to GENE-E:
+
+```{r}
+library(GENE.E) 
+library(golubEsets) 
+data(Golub_Merge) 
+to.genee(exprs(Golub_Merge), fData(Golub_Merge), show.colnames=F, pData(Golub_Merge)[,c('Gender', 'ALL.AML')], column.hclust=hclust(dist(t(exprs(Golub_Merge)))))
+```
+
+In GENE-E, (see video below), drag the dotted line to cut the sample dendrogram. Next, click a dendrogram branch to select the samples in that branch. 
+
+<iframe width="853" height="480" src="http://www.youtube.com/embed/z_CUlLlkmGI?rel=0" frameborder="0" allowfullscreen></iframe>
+
+Finally, get the selected data in GENE-E back into our R session:
+
+```{r}
+selection <- from.genee()
+```
