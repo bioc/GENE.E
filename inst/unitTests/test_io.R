@@ -5,6 +5,7 @@ z = matrix(rnorm(30),nrow=5,ncol=6);
 	L3 <- LETTERS[1:3]  
 	column.annotations <- data.frame(y=1:6, char = I(letters[1:6]), fac=sample(L3, 6, replace=TRUE))
 	to.genee(z, row.annotations, column.annotations);
+	Sys.sleep(5)
 	fz = from.genee();
 	
 test_matrix <- function() {
