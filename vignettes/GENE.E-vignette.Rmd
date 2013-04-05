@@ -54,5 +54,6 @@ In GENE-E, (see video below), drag the dotted line to cut the sample dendrogram.
 Finally, get the selected data in GENE-E back into our R session:
 
 ```{r}
+Sys.sleep(5)
 selection <- from.genee()
 ```
