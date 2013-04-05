@@ -30,11 +30,19 @@ The `GENE.E` package provides the ability to transfer matrices, dendrograms, and
 # Example Usage
 
 For illustration of `GENE.E` usage, we use the Golub et al. data
-set on acute leukemia from the `golubEsets` package. Please ensure that GENE-E is running and then issue the following commands to load the data and send the data to GENE-E:
+set on acute leukemia from the `golubEsets` package. First, load the `GENE.E` and `golubEsets` packages:
+
+```{r library_GENE.E_fake, eval=FALSE}
+library(GENE.E)
+library(golubEsets) 
+```
+```{r library_GENE.E_real, warn=FALSE, echo=FALSE, results="hide"}
+suppressPackageStartupMessages(library(GENE.E))
+suppressPackageStartupMessages(library(golubEsets))
+```
+Next, ensure that GENE-E is running and then issue the following commands to load the data and send the data to GENE-E:
 
 ```{r}
-library(GENE.E) 
-library(golubEsets) 
 data(Golub_Merge) 
 to.genee(exprs(Golub_Merge), fData(Golub_Merge), show.colnames=F, pData(Golub_Merge)[,c('Gender', 'ALL.AML')], column.hclust=hclust(dist(t(exprs(Golub_Merge)))))
 ```
@@ -46,6 +54,5 @@ In GENE-E, (see video below), drag the dotted line to cut the sample dendrogram.
 Finally, get the selected data in GENE-E back into our R session:
 
 ```{r}
-Sys.sleep(5)
 selection <- from.genee()
 ```
