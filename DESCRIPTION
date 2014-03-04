@@ -1,11 +1,10 @@
 Package: GENE.E
 Type: Package
 Title: Interact with GENE-E from R
-Version: 1.3.0
+Version: 1.3.1
 Date: 2013-03-01
 Author: Joshua Gould
 Maintainer: Joshua Gould <jgould@broadinstitute.org>
-biocViews: ConnectTools
 Depends: R (>= 2.7.0), h5r (>= 1.4.1), RCurl (>= 1.6-6)
 Imports: h5r, RCurl
 Suggests: RUnit, BiocGenerics, knitr, golubEsets (>= 1.0)
@@ -14,3 +13,4 @@ Description: Interactive exploration of matrices in GENE-E.
 License: GPL-2
 URL: http://www.broadinstitute.org/cancer/software/GENE-E
 VignetteBuilder: knitr
+biocViews: ThirdPartyClient
