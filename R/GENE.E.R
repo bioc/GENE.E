@@ -1,6 +1,5 @@
-library(h5r)
-library(RCurl)
-	
+library(rhdf5)
+library(RCurl)	
 write.gctx <- function(mdat, row.annotations=NULL, column.annotations=NULL, write.rownames=T, write.colnames=T, row.hclust=NULL, column.hclust=NULL, file) {
 	if(!is.null(row.hclust)) {
 		mdat <- mdat[row.hclust$order,]
@@ -14,103 +13,36 @@ write.gctx <- function(mdat, row.annotations=NULL, column.annotations=NULL, writ
 			 column.annotations <- column.annotations[column.hclust$order,]
 		}
 	}
-	mdat <- t(mdat)
-	h5 <- H5File(file, 'w')
-	zero <- createH5Group(h5, '0')
+	h5createFile(file)
+	# h5writeAttribute('GCTX1.0', file, '/', 'version')
 	
-	createH5Dataset(createH5Group(createH5Group(zero, 'DATA'), '0'), "matrix", mdat, overwrite=T)
+	h5createGroup(file, '0')
+	h5createGroup(file, '0/DATA')
+	h5createGroup(file, '0/DATA/0')
+	h5write(mdat, file,'0/DATA/0/matrix')
 	
-	meta <- createH5Group(zero, 'META')
-	col <- createH5Group(meta, 'COL')
-	row <- createH5Group(meta, 'ROW')
+	h5createGroup(file, '0/META')
+	h5createGroup(file, '0/META/COL')
+	h5createGroup(file, '0/META/ROW')
 	if(!is.null(row.hclust)) {
 		id <- paste (0:(ncol(mdat)-1),'X',sep='')
-		createH5Dataset(row, 'gene id', id[row.hclust$order], overwrite=T) 
-		r2atr(h5, row.hclust, TRUE)
+		h5write(id[row.hclust$order], file,'0/META/ROW/gene id')
+		r2atr(file, row.hclust, TRUE)
 	}
 	if(!is.null(column.hclust)) {
 		id <- paste (0:(nrow(mdat)-1),'X',sep='')
-		createH5Dataset(col, 'array id', id[column.hclust$order], overwrite=T) 
-		r2atr(h5, column.hclust, FALSE)
+		h5write(id[column.hclust$order], file,'0/META/COL/array id')
+		r2atr(file, column.hclust, FALSE)
 	}
-	if(!is.null(row.annotations) || !is.null(colnames(mdat))) {
-		write.meta(row, colnames(mdat), row.annotations, write.rownames)
+	if(!is.null(row.annotations) || !is.null(rownames(mdat))) {
+		write.meta(file, FALSE, rownames(mdat), row.annotations, write.rownames)
 	}
-	if(!is.null(column.annotations) || !is.null(rownames(mdat))) {
-		write.meta(col, rownames(mdat), column.annotations, write.colnames)
-	}
-	
-	
-	rm(zero) 
-	rm(meta) 
-	rm(col) 
-	rm(row) 
-	rm(h5) 
-	gc()
-}
-
-write.meta <- function(node, n, annotations, write.names) {
-	if(!is.null(n) && write.names) {
-		createH5Dataset(node, 'Name', n, overwrite=T) # row or column names
-	}
-	if(!is.null(annotations)) {
-		names <- colnames(annotations)
-		number.of.names <- length(names)
-		if(number.of.names > 0) {
-			for(i in 1:number.of.names) {
-				name = names[i]
-				v <- annotations[[i]]
-				if(class(v) == 'factor') {
-					v <- as.character(v)
-				}
-				createH5Dataset(node, name, v, overwrite=T)
-			}
-		}
+	if(!is.null(column.annotations) || !is.null(colnames(mdat))) {
+		write.meta(file, TRUE, colnames(mdat), column.annotations, write.colnames)
 	}
 }
 
-read.gctx = function (src, matrix=TRUE) {
-	f <-  H5File(src)
-	mat <-  NULL
-	if(matrix) {
-		mat <-  getH5Dataset(getH5Group(f, "0/DATA/0"), "matrix")
-		mat <-  t(as.matrix(mat[][]))
-	}	
-	row.meta <-  read.meta(f, "0/META/ROW")
-	column.meta <- read.meta(f, "0/META/COL")
-	rm(f)
-	gc()
-	return(list(row.annotations=row.meta, column.annotations=column.meta, matrix=mat))
-}
-
-#read.hclust = function (f, datasetName) {
-#    group <- getH5Group(f, '/0/DATA/')
-#	data <- getH5Dataset(group, datasetName)   
-#	con <- textConnection(data, encoding='bytes')
-#	dend <- xcluster2r(con)
-#	close(con)
-#}
-
-read.meta = function (f, path) {
-	meta <-  getH5Group(f, path)
-	contents <-  listH5Contents(meta)
-    fields <-  names(contents)
-	fields <-  fields[fields != "."]
-    i <-  1;
-    meta.data = NULL
-    for ( field in fields ) {
-    	data <-  getH5Dataset(meta, field)
-    	if(i == 1) {
-    		meta.data <-  data.frame(matrix(nrow = length(data), ncol = length(fields)))
- 			colnames(meta.data) <-  fields
-    	}
- 		meta.data[,i] <- data[]
- 		i = i+1
-    }	
-    return(meta.data)
-}
-
-r2atr <- function(h5, hc, rows)
+r2atr <- function(file, hc, rows)
 {
   height <- hc$height
   n <- length(height)
@@ -129,16 +61,56 @@ r2atr <- function(h5, hc, rows)
   merge2[hc$merge[,2]>0] <- merge11[hc$merge[,2]>0]
   merge2[hc$merge[,2]<0] <- merge12[hc$merge[,2]<0]
 
-  if(rows) {
-  	 n <- createH5Group(h5, '/0/DATA/row_dendrogram')
-  } else {
-  	 n <- createH5Group(h5, '/0/DATA/column_dendrogram')
-  }
+  path <- if(rows) '0/DATA/row_dendrogram' else '0/DATA/column_dendrogram'
+  h5createGroup(file, path)
  
-  createH5Dataset(n, 'id', node, overwrite=T)
-  createH5Dataset(n, 'left', merge1, overwrite=T)
-  createH5Dataset(n, 'right', merge2, overwrite=T)
-  createH5Dataset(n, 'distance', height, overwrite=T) 
+  h5write(node, file, paste(path, 'id', sep='/'))
+  h5write(merge1, file, paste(path, 'left', sep='/'))
+  h5write(merge2, file, paste(path, 'right', sep='/'))
+  h5write(height, file, paste(path, 'distance', sep='/'))
+}
+
+write.meta <- function(file, isColumns, n, annotations, write.names) {
+	path <- if(isColumns) '0/META/COL/' else '0/META/ROW/'
+	if(!is.null(n) && write.names) {
+		h5write(n, file, paste(path, 'Name', sep='')) # row or column names
+	}
+	if(!is.null(annotations)) {
+		names <- colnames(annotations)
+		number.of.names <- length(names)
+		if(number.of.names > 0) {
+			for(i in 1:number.of.names) {
+				name = names[i]
+				v <- annotations[[i]]
+				if(class(v) == 'factor') {
+					v <- as.character(v)
+				}
+				h5write(v, file, paste(path, name, sep=''))
+			}
+		}
+	}
+}
+
+read.gctx = function (f, matrix=TRUE) {
+	mat <-  NULL
+	if(matrix) {
+		mat <-  h5read(f, "0/DATA/0/matrix")
+	}	
+	row.meta <-  read.meta(f, "0/META/ROW")
+	column.meta <- read.meta(f, "0/META/COL")
+	return(list(row.annotations=row.meta, column.annotations=column.meta, matrix=mat))
+}
+
+read.meta = function (f, path) {
+	obj <- h5read(f, path)
+    fields <- names(obj)
+    meta.data <-  data.frame(matrix(nrow = length(obj[[fields[1]]]), ncol = length(fields)))
+ 	colnames(meta.data) <-  fields
+ 	for(i in 1:length(fields)) {
+ 		field <- fields[i]
+ 		meta.data[,i] <- obj[[field]]
+    }	
+    return(meta.data)
 }
 
 from.genee <- function(url='http://localhost:9998') {

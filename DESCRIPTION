@@ -5,8 +5,8 @@ Version: 1.4.0
 Date: 2013-03-01
 Author: Joshua Gould
 Maintainer: Joshua Gould <jgould@broadinstitute.org>
-Depends: R (>= 2.7.0), h5r (>= 1.4.1), RCurl (>= 1.6-6)
-Imports: h5r, RCurl
+Depends: R (>= 2.7.0), rhdf5 (>= 2.8.0), RCurl (>= 1.6-6)
+Imports: rhdf5, RCurl
 Suggests: RUnit, BiocGenerics, knitr, golubEsets (>= 1.0)
 SystemRequirements: GENE-E software.
 Description: Interactive exploration of matrices in GENE-E.
