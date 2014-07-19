@@ -73,6 +73,9 @@ r2atr <- function(file, hc, rows)
 write.meta <- function(file, isColumns, n, annotations, write.names) {
 	path <- if(isColumns) '0/META/COL/' else '0/META/ROW/'
 	if(!is.null(n) && write.names) {
+		if(class(n) == 'factor' || class(n)== 'AsIs') {
+			n <- as.character(n)
+		}
 		h5write(n, file, paste(path, 'Name', sep='')) # row or column names
 	}
 	if(!is.null(annotations)) {
@@ -82,7 +85,7 @@ write.meta <- function(file, isColumns, n, annotations, write.names) {
 			for(i in 1:number.of.names) {
 				name = names[i]
 				v <- annotations[[i]]
-				if(class(v) == 'factor') {
+				if(class(v) == 'factor' || class(v)== 'AsIs') {
 					v <- as.character(v)
 				}
 				h5write(v, file, paste(path, name, sep=''))
