@@ -1,7 +1,7 @@
 Package: GENE.E
 Type: Package
 Title: Interact with GENE-E from R
-Version: 1.15.0
+Version: 1.15.1
 Date: 2013-03-01
 Author: Joshua Gould
 Maintainer: Joshua Gould <jgould@broadinstitute.org>
@@ -14,3 +14,4 @@ License: GPL-2
 URL: http://www.broadinstitute.org/cancer/software/GENE-E
 VignetteBuilder: knitr
 biocViews: ThirdPartyClient
+PackageStatus: Deprecated
