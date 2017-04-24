@@ -1,7 +1,7 @@
 Package: GENE.E
 Type: Package
 Title: Interact with GENE-E from R
-Version: 1.15.1
+Version: 1.16.0
 Date: 2013-03-01
 Author: Joshua Gould
 Maintainer: Joshua Gould <jgould@broadinstitute.org>
